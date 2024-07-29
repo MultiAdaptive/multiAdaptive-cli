@@ -1,5 +1,5 @@
 # multiAdaptive
-Please use a new wallet.
+Please use a new wallet.  
 This activity supports Linux/Mac/Windows systems to participate in the test.
 
 ## Preparing to Test ETH
@@ -10,7 +10,7 @@ You can get test ETH from the following faucets:
 
 
 
-## linux/mac
+## Linux/Mac
 
 ### Downloading the Client
 
@@ -27,7 +27,7 @@ To participate in the test, run the client with your private key:
 ```
 Feel free to replace <your privateKey> with your actual private key.
 
-## windows
+## Windows
 
 ### Downloading the Client
 
