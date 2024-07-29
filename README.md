@@ -7,7 +7,6 @@
 | [git](https://git-scm.com/)                                   | `^2`     | `git --version`       |
 | [go](https://go.dev/)                                         | `^1.21`  | `go version`          |
 | [make](https://linux.die.net/man/1/make)                      | `^3`     | `make --version`      |
-| [direnv](https://direnv.net)                                  | `^2`     | `direnv --version`    |
 
 ## Build
 
@@ -15,19 +14,12 @@
     make build
   ```
 
-## Fill Out Environment Variables
-
-Copy the sample environment variable file and fill in the required content.  
-```bash
-cp .envrc.example .envrc
-```
-
 ## View All Broadcast Nodes
 
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select View Broadcast Node Information
@@ -37,7 +29,7 @@ cp .envrc.example .envrc
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select View Storage Node Information
@@ -46,7 +38,7 @@ cp .envrc.example .envrc
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select Register NodeGroup.
@@ -58,7 +50,7 @@ cp .envrc.example .envrc
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select Register NameSpace.
@@ -70,7 +62,7 @@ By default, this will participate in sending DA data for testing, sending data e
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select General test
@@ -79,7 +71,7 @@ By default, this will participate in sending DA data for testing, sending data e
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select Advanced test.
@@ -91,7 +83,7 @@ By default, this will participate in sending DA data for testing, sending data e
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select Register as a broadcast node.
@@ -105,7 +97,7 @@ By default, this will participate in sending DA data for testing, sending data e
 1. Run multiAdaptive-cli
 
 ```bash
-./build/multiAdaptive-cli
+./build/multiAdaptive-cli -privateKey="<your privateKey>" -advanced
 ```
 
 2. Select Register as a storage node.
