@@ -16,7 +16,6 @@ $(BUILD_DIR)/$(BINARY_NAME): main.go
 	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)
 	@echo "Copying srs files..."
 	@mkdir -p $(BUILD_DIR)
-	@cp -r srs $(BUILD_DIR)/
 
 clean:
 	@echo "Cleaning build directory..."
