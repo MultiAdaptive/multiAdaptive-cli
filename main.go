@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"flag"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MultiAdaptive/multiAdaptive-cli/bindings"
@@ -16,7 +17,6 @@ import (
 	kzgsdk "github.com/multiAdaptive/kzg-sdk"
 	"log"
 	"math/big"
-	"os"
 	"strings"
 	"time"
 )
@@ -30,31 +30,28 @@ const (
 	ethUrl                = "https://eth-sepolia.public.blastapi.io"
 )
 
+var privateKey *ecdsa.PrivateKey
+var addr common.Address
+
 func main() {
-	privateKeyHex := getEnv("PRIVATE_KEY", "")
-	addressHex := getEnv("ADDRESS", "")
-	validateEnvVars(privateKeyHex, addressHex)
+	privateKeyHey := flag.String("privateKey", "", "Please enter privateKey")
+	isTrue := flag.Bool("advanced", false, "Is it advanced mode?")
 
-	// Prompt user to select an action
-	action := getAction()
-	// Execute the selected action
-	executeAction(action)
-}
+	flag.Parse()
 
-// Retrieve environment variable value or fallback if not set
-func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+	if len(*privateKeyHey) == 0 {
+		log.Fatalf("PrivateKey not set")
+
 	}
-	return fallback
-}
+	privateKey, addr = privateKeyToAddress(*privateKeyHey)
 
-// Validate that all environment variables are set
-func validateEnvVars(vars ...string) {
-	for _, v := range vars {
-		if v == "" {
-			log.Fatalf("Environment variable is not set")
-		}
+	if !*isTrue {
+		generalTest()
+	} else {
+		// Prompt user to select an action
+		action := getAction()
+		// Execute the selected action
+		executeAction(action)
 	}
 }
 
@@ -252,13 +249,11 @@ func advancedTest() {
 func registerBroadcastNode() {
 	url, name, location, stakedTokens, maxStorageSpace := getRegisterNodeInfo()
 
-	privateKeyHex := os.Getenv("PRIVATE_KEY")
-	private, address := privateKeyToAddress(privateKeyHex)
 	client, instance, err := getNodeManagerInstance()
 	if err != nil {
 		log.Fatalf("cant create contract address err: %s", err)
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(private, big.NewInt(chainID))
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainID))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,7 +263,7 @@ func registerBroadcastNode() {
 		StakedTokens:    big.NewInt(stakedTokens),
 		Location:        location,
 		MaxStorageSpace: big.NewInt(maxStorageSpace),
-		Addr:            address,
+		Addr:            addr,
 	})
 
 	if err != nil {
@@ -281,13 +276,11 @@ func registerBroadcastNode() {
 func registerStorageNode() {
 	url, name, location, stakedTokens, maxStorageSpace := getRegisterNodeInfo()
 
-	privateKeyHex := os.Getenv("PRIVATE_KEY")
-	private, address := privateKeyToAddress(privateKeyHex)
 	client, instance, err := getNodeManagerInstance()
 	if err != nil {
 		log.Fatalf("cant create contract address err: %s", err)
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(private, big.NewInt(chainID))
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainID))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -297,7 +290,7 @@ func registerStorageNode() {
 		StakedTokens:    big.NewInt(stakedTokens),
 		Location:        location,
 		MaxStorageSpace: big.NewInt(maxStorageSpace),
-		Addr:            address,
+		Addr:            addr,
 	})
 
 	if err != nil {
@@ -350,10 +343,7 @@ func sendDA(nodeGroupKeyStr string, nameSpaceKey [32]byte) {
 	}
 
 	nodeGroupKey := common.HexToHash(nodeGroupKeyStr)
-	addressHex := os.Getenv("ADDRESS")
-	sender := common.HexToAddress(addressHex)
-
-	index, err := getIndex(sender)
+	index, err := getIndex(addr)
 	if err != nil {
 		log.Fatalf("getIndex Error: %s", err)
 	}
@@ -361,7 +351,8 @@ func sendDA(nodeGroupKeyStr string, nameSpaceKey [32]byte) {
 	ti := time.Now()
 	timeout := ti.Add(10 * time.Hour).Unix()
 
-	signatures, err := GetSignature(nodeGroupKey, sender, index, uint64(len(data)), cm.Marshal(), data, proof.H.Marshal(), proof.ClaimedValue.Marshal(), uint64(timeout))
+	signatures, err := GetSignature(nodeGroupKey, addr, index, uint64(len(data)), cm.Marshal(), data, proof.H.Marshal(), proof.ClaimedValue.Marshal(), uint64(timeout))
+
 	if err != nil {
 		log.Printf("GetSignature Error: %s", err)
 	}
@@ -417,6 +408,7 @@ func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length
 		}
 		sign, err := signature(info.Url, sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue, timeout)
 		if err != nil {
+			log.Println(err.Error())
 			signatures = append(signatures, nil)
 			continue
 		}
@@ -438,13 +430,12 @@ func signature(url string, sender common.Address, index, length uint64, commitme
 }
 
 func SendCommitToL1(length uint64, dasKey [32]byte, sign [][]byte, commit kzg.Digest, nameSpaceId [32]byte, timeout int64) {
-	privateKeyHex := os.Getenv("PRIVATE_KEY")
-	private, _ := privateKeyToAddress(privateKeyHex)
+
 	client, instance, err := getCommitmentManagerInstance()
 	if err != nil {
 		log.Fatalf("cant create contract address err: %s", err)
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(private, big.NewInt(chainID))
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainID))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -517,9 +508,8 @@ func getStorageManagerInstance() (*ethclient.Client, *bindings.StorageManager, *
 		log.Fatal(err)
 		return nil, nil, nil, nil
 	}
-	privateKeyHex := os.Getenv("PRIVATE_KEY")
-	private, address := privateKeyToAddress(privateKeyHex)
-	auth, err := bind.NewKeyedTransactorWithChainID(private, big.NewInt(chainID))
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainID))
 	if err != nil {
 		log.Fatal(err)
 		return nil, nil, nil, nil
@@ -529,7 +519,7 @@ func getStorageManagerInstance() (*ethclient.Client, *bindings.StorageManager, *
 		log.Fatalf("cant create contract address err: %v", err)
 		return nil, nil, nil, nil
 	}
-	return client, instance, auth, &address
+	return client, instance, auth, &addr
 }
 
 func getRegisterNodeInfo() (url, name, location string, stakedTokens, maxStorageSpace int64) {
@@ -584,6 +574,7 @@ func parseAddresses(addresses string) []common.Address {
 func privateKeyToAddress(privateKeyHex string) (*ecdsa.PrivateKey, common.Address) {
 	private, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
+		log.Println(privateKeyHex)
 		log.Fatalf("Invalid private key: %v", err)
 	}
 	address := crypto.PubkeyToAddress(private.PublicKey)
