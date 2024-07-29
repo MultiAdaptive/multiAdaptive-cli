@@ -206,7 +206,7 @@ func registerNameSpace() common.Hash {
 // Perform a general test with simulated data
 func generalTest() {
 	fmt.Println("Running Parameter Test...")
-	const nodeGroupKeyStr = "69506f24e7f886f0e3dd0a6f2137da279798d7bcfaef2071648748d6930594fe"
+	const nodeGroupKeyStr = "8af361a6d746c89b15a8bce2f9be881e6638b4b17ab7375a89ead3474e341687"
 	nameSpaceKey := common.HexToHash("0x00")
 	for {
 		sendDA(nodeGroupKeyStr, nameSpaceKey)
