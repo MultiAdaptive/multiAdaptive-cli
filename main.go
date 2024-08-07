@@ -23,9 +23,9 @@ import (
 
 const (
 	dataSize              = 5 * 1024 * 1024
-	cmManagerAddress      = "0xa8ED91Eb2B65A681A742011798d7FB31C50FA724"
-	nodeManagerAddress    = "0x97bE3172AEA87b60224e8d604aC4bAbe55F067EC"
-	storageManagerAddress = "0x664250Fb3b1cd58f07683D957A34daf8A06130fe"
+	cmManagerAddress      = "0xb945872cbF327DA5CBEb6aE7286ccEE6CAaBA3B2"
+	nodeManagerAddress    = "0xed592c8F0B13bb8A761BFFb6140720D89552999B"
+	storageManagerAddress = "0x44214b40b88BeD3424b2684bE6b102fD3BCA4a09"
 	chainID               = 11155111
 	ethUrl                = "https://eth-sepolia.public.blastapi.io"
 )
@@ -406,7 +406,7 @@ func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length
 			signatures = append(signatures, nil)
 			continue
 		}
-		sign, err := signature(info.Url, sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue, timeout)
+		sign, err := signature(info.Url, sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue, timeout, nil)
 		if err != nil {
 			log.Println(err.Error())
 			signatures = append(signatures, nil)
@@ -418,14 +418,14 @@ func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length
 	return signatures, nil
 }
 
-func signature(url string, sender common.Address, index, length uint64, commitment, data []byte, nodeGroupKey [32]byte, proof, claimedValue []byte, timeout uint64) ([]byte, error) {
+func signature(url string, sender common.Address, index, length uint64, commitment, data []byte, nodeGroupKey [32]byte, proof, claimedValue []byte, timeout uint64, extraData []byte) ([]byte, error) {
 	client, err := ethclient.Dial(url)
 	if err != nil {
 		return nil, err
 	}
 	ctx := context.Background()
 	var result []byte
-	err = client.Client().CallContext(ctx, &result, "mta_sendDAByParams", sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue, timeout)
+	err = client.Client().CallContext(ctx, &result, "mta_sendDAByParams", sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue, timeout, extraData)
 	return result, err
 }
 
